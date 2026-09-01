@@ -1,4 +1,5 @@
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DEFAULT_LEAD_WEBHOOK_URL = 'https://sales.indataflow.com/integrations/leads/website';
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -49,20 +50,23 @@ export async function onRequestPost(context) {
     submitted_at: new Date().toISOString(),
   };
 
-  if (!context.env.LEAD_WEBHOOK_URL) {
-    return json({ error: 'Lead destination is not configured' }, 503);
-  }
+  const leadWebhookUrl = context.env.LEAD_WEBHOOK_URL || DEFAULT_LEAD_WEBHOOK_URL;
 
-  const forwarded = await fetch(context.env.LEAD_WEBHOOK_URL, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      ...(context.env.LEAD_WEBHOOK_TOKEN
-        ? { authorization: `Bearer ${context.env.LEAD_WEBHOOK_TOKEN}` }
-        : {}),
-    },
-    body: JSON.stringify(lead),
-  });
+  let forwarded;
+  try {
+    forwarded = await fetch(leadWebhookUrl, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        ...(context.env.SALES_INTAKE_SECRET
+          ? { 'X-InDataFlow-Lead-Secret': context.env.SALES_INTAKE_SECRET }
+          : {}),
+      },
+      body: JSON.stringify(lead),
+    });
+  } catch {
+    return json({ error: 'Lead destination is unavailable' }, 502);
+  }
 
   if (!forwarded.ok) return json({ error: 'Lead destination rejected the request' }, 502);
   return json({ ok: true });
