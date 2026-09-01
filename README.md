@@ -8,11 +8,10 @@ A dependency-free Cloudflare Pages project containing the finished two-step lead
 2. In Cloudflare Pages, create a project from the repository.
 3. Set the build command to empty.
 4. Set the build output directory to `/`.
-5. Set `LEAD_WEBHOOK_URL` to the desired destination. If omitted, the function falls back to `https://sales.indataflow.com/integrations/leads/website`.
-6. Set `SALES_INTAKE_SECRET` to send `X-InDataFlow-Lead-Secret` to the sales intake endpoint.
-7. Deploy.
+5. Set `SALES_INTAKE_SECRET` to send `X-InDataFlow-Lead-Secret` to `https://sales.indataflow.com/integrations/leads/website`.
+6. Deploy.
 
-The webhook receives JSON containing the visible form fields, consent, source fields, campaign parameters, page URL, and submission time.
+The Pages Function forwards JSON to `https://sales.indataflow.com/integrations/leads/website` using the sales intake field names (`email`, `job_title`, `message`) and the `X-InDataflow-Lead-Secret` header from `SALES_INTAKE_SECRET`.
 
 ## Campaign parameters
 
