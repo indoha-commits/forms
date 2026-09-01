@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Get a practical InDataFlow operations checklist for finding reporting gaps, delayed handoffs, and manual follow-up.">
+  <title>Operations Checklist | InDataFlow</title>
+  <link rel="preload" href="/assets/operator.jpg" as="image">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="page-shell">
+    <div class="page-copy">
+      <img class="page-logo" src="/assets/indataflow-logo-white.png" alt="InDataFlow">
+      <p class="eyebrow">OPERATIONS CHECKLIST</p>
+      <h1>Clearer logistics follow-up starts here.</h1>
+      <p>Find the handoffs, reporting gaps, and manual work slowing your team down.</p>
+      <button class="primary-button" type="button" data-open-form>Get the checklist</button>
+    </div>
+  </main>
+
+  <div class="modal is-open" id="lead-modal" role="dialog" aria-modal="true" aria-labelledby="form-title">
+    <button class="modal-backdrop" type="button" aria-label="Close form" data-close-form></button>
+    <section class="form-shell">
+      <button class="close-button" type="button" aria-label="Close form" data-close-form>×</button>
+      <header class="brand-row">
+        <img src="/assets/indataflow-logo-white.png" alt="InDataFlow">
+        <span id="step-label">1 / 2</span>
+      </header>
+
+      <form id="lead-form" novalidate>
+        <section class="form-step is-active" data-step="1">
+          <div class="offer-image" role="img" aria-label="Logistics operator reviewing shipment information">
+            <span>OPERATIONS CHECKLIST</span>
+          </div>
+          <div class="route-line"><i></i></div>
+          <div class="step-content">
+            <h2 id="form-title">See where your logistics workflow is losing time</h2>
+            <p>Get a practical checklist to find reporting gaps, delayed handoffs, and manual follow-up.</p>
+            <ul>
+              <li>Find bottlenecks across intake, tracking, and follow-up</li>
+              <li>See where manual work is slowing conversion</li>
+              <li>Get a cleaner path from lead to action</li>
+            </ul>
+            <div class="action-row">
+              <button class="primary-button" type="button" id="next-step">Get the checklist</button>
+              <small>Takes less than 1 minute</small>
+            </div>
+          </div>
+        </section>
+
+        <section class="form-step" data-step="2">
+          <div class="step-two-heading">
+            <button class="back-button" type="button" id="previous-step" aria-label="Go back">←</button>
+            <div>
+              <h2>Send my operations checklist</h2>
+              <p>A few details help us route the right follow-up.</p>
+            </div>
+          </div>
+
+          <div class="fields-grid">
+            <label>Full name<input name="full_name" autocomplete="name" placeholder="Jane Mwangi" required></label>
+            <label>Work email<input name="work_email" type="email" autocomplete="email" placeholder="jane@company.com" required></label>
+            <label>Company<input name="company" autocomplete="organization" placeholder="Company name" required></label>
+            <label>Company website<input name="company_website" type="url" inputmode="url" placeholder="https://company.com"></label>
+            <label>Role<input name="role" autocomplete="organization-title" placeholder="Operations Manager" required></label>
+            <label>Country<input name="country" autocomplete="country-name" placeholder="Rwanda" required></label>
+            <label class="full-width">What would you like to improve?<textarea name="improvement_goal" maxlength="400" placeholder="Reduce status chasing, improve visibility, or tighten lead follow-up."></textarea></label>
+          </div>
+
+          <label class="consent"><input name="consent" type="checkbox" required><span>I agree to be contacted about this request</span></label>
+          <p class="form-error" id="form-error" role="alert"></p>
+          <div class="action-row submit-row">
+            <button class="primary-button" type="submit">Send it</button>
+            <small>Prepared follow-up. No generic spam.</small>
+          </div>
+        </section>
+
+        <section class="form-step success-step" data-step="success" aria-live="polite">
+          <div class="success-image"></div>
+          <div class="route-line"><i></i></div>
+          <div class="step-content">
+            <h2>Checklist request received</h2>
+            <p>Your request is now in the sales workflow. If your email matches the campaign rules, you may also receive a direct follow-up from the team.</p>
+            <strong>If this is urgent, reply to the email you receive.</strong>
+            <button class="secondary-button" type="button" data-close-form>Close</button>
+          </div>
+        </section>
+      </form>
+    </section>
+  </div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
