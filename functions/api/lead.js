@@ -11,6 +11,14 @@ function json(body, status = 200) {
   });
 }
 
+async function readUpstreamBody(response) {
+  try {
+    return (await response.text()).slice(0, 500);
+  } catch {
+    return '';
+  }
+}
+
 export async function onRequestPost(context) {
   let payload;
   try {
@@ -65,10 +73,22 @@ export async function onRequestPost(context) {
       body: JSON.stringify(lead),
     });
   } catch {
-    return json({ error: 'Lead destination is unavailable' }, 502);
+    return json({
+      error: 'Lead destination is unavailable',
+      destination: leadWebhookUrl,
+    }, 502);
   }
 
-  if (!forwarded.ok) return json({ error: 'Lead destination rejected the request' }, 502);
+  if (!forwarded.ok) {
+    const upstreamBody = await readUpstreamBody(forwarded);
+    return json({
+      error: 'Lead destination rejected the request',
+      destination: leadWebhookUrl,
+      upstream_status: forwarded.status,
+      upstream_status_text: forwarded.statusText,
+      upstream_body: upstreamBody,
+    }, 502);
+  }
   return json({ ok: true });
 }
 

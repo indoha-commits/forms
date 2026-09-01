@@ -3,6 +3,7 @@ const form = document.querySelector('#lead-form');
 const stepLabel = document.querySelector('#step-label');
 const errorNode = document.querySelector('#form-error');
 const submitButton = form.querySelector('button[type="submit"]');
+const leadEndpoint = form.dataset.endpoint || '/api/lead';
 
 function showStep(step) {
   form.querySelectorAll('.form-step').forEach((node) => {
@@ -62,16 +63,17 @@ form.addEventListener('submit', async (event) => {
   submitButton.disabled = true;
   submitButton.textContent = 'Sending…';
   try {
-    const response = await fetch('/api/lead', {
+    const response = await fetch(leadEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error('Submission failed');
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || 'Submission failed');
     form.reset();
     showStep('success');
   } catch (error) {
-    errorNode.textContent = 'We could not send your request. Please try again.';
+    errorNode.textContent = error.message || 'We could not send your request. Please try again.';
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = 'Send it';
