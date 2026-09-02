@@ -38,11 +38,13 @@ export async function onRequestPost(context) {
     return json({ error: 'Consent is required' }, 400);
   }
 
+  const companyDomain = String(payload.company_website || '').trim();
+
   const lead = {
     full_name: String(payload.full_name).slice(0, 120),
     email: String(payload.work_email).slice(0, 180),
     company: String(payload.company).slice(0, 180),
-    company_website: String(payload.company_website || '').slice(0, 300),
+    company_domain: companyDomain ? companyDomain.slice(0, 300) : undefined,
     job_title: String(payload.role).slice(0, 120),
     country: String(payload.country).slice(0, 100),
     message: String(payload.improvement_goal || '').slice(0, 400),
