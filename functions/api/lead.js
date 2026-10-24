@@ -27,11 +27,11 @@ export async function onRequestPost(context) {
     return json({ error: 'Invalid request' }, 400);
   }
 
-  const required = ['full_name', 'work_email', 'company', 'role', 'country'];
+  const required = ['full_name', 'email', 'company', 'role', 'country'];
   if (required.some((key) => !String(payload[key] || '').trim())) {
     return json({ error: 'Required details are missing' }, 400);
   }
-  if (!EMAIL_PATTERN.test(String(payload.work_email))) {
+  if (!EMAIL_PATTERN.test(String(payload.email))) {
     return json({ error: 'A valid work email is required' }, 400);
   }
   if (payload.consent !== true) {
