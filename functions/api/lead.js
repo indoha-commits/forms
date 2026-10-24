@@ -1,5 +1,5 @@
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const LEAD_WEBHOOK_URL = 'https://sales.indataflow.com/integrations/leads/website';
+const LEAD_WEBHOOK_URL = 'https://sales.indataflow.com/integrations/leads/form';
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
