@@ -89,7 +89,7 @@ export async function onRequestPost(context) {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'X-Company-Lead-Secret': secret,
+        'X-Company-Core-Lead-Secret': secret,
       },
       body: JSON.stringify(lead),
     });
