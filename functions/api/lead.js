@@ -1,4 +1,5 @@
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const LEAD_WEBHOOK_URL =
   'https://sales.indataflow.com/integrations/leads/website';
 
@@ -33,54 +34,77 @@ export async function onRequestPost(context) {
     return json({ error: 'Invalid request' }, 400);
   }
 
+  // Validate the field names submitted by the frontend.
   const required = [
     'full_name',
-    'work_email',
+    'email',
     'company',
     'role',
     'country',
   ];
 
-  if (required.some((key) => !String(payload[key] || '').trim())) {
+  if (
+    required.some(
+      (key) => !String(payload[key] || '').trim()
+    )
+  ) {
     return json({ error: 'Required details are missing' }, 400);
   }
 
-  if (!EMAIL_PATTERN.test(String(payload.work_email).trim())) {
-    return json({ error: 'A valid work email is required' }, 400);
+  const email = String(payload.email).trim();
+
+  if (!EMAIL_PATTERN.test(email)) {
+    return json({ error: 'A valid email is required' }, 400);
   }
 
   if (payload.consent !== true) {
     return json({ error: 'Consent is required' }, 400);
   }
 
+  // Require the existing environment secret.
   const secret = context.env.SALES_INTAKE_SECRET;
 
   if (!secret) {
     console.error('Lead forwarding secret is not configured');
-    return json({ error: 'Lead submission is temporarily unavailable' }, 500);
+
+    return json({
+      error: 'Lead submission is temporarily unavailable',
+    }, 500);
   }
 
-  const companyDomain = String(payload.company_website || '').trim();
+  const companyDomain = String(
+    payload.company_website || ''
+  ).trim();
 
+  // Build the payload expected by the receiving sales service.
   const lead = {
     full_name: String(payload.full_name).trim().slice(0, 120),
-    email: String(payload.work_email).trim().slice(0, 180),
+    email: email.slice(0, 180),
     company: String(payload.company).trim().slice(0, 180),
+
     company_domain: companyDomain
       ? companyDomain.slice(0, 300)
       : undefined,
+
     job_title: String(payload.role).trim().slice(0, 120),
     country: String(payload.country).trim().slice(0, 100),
+
     message: String(payload.improvement_goal || '').slice(0, 400),
+
     consent: true,
+
     source: String(payload.source || 'website').slice(0, 100),
-    source_detail: String(payload.source_detail || 'signup_form').slice(0, 120),
+    source_detail: String(
+      payload.source_detail || 'signup_form'
+    ).slice(0, 120),
+
     utm_source: String(payload.utm_source || '').slice(0, 160),
     utm_medium: String(payload.utm_medium || '').slice(0, 160),
     utm_campaign: String(payload.utm_campaign || '').slice(0, 160),
     campaign_id: String(payload.campaign_id || '').slice(0, 160),
     post_id: String(payload.post_id || '').slice(0, 160),
     page_url: String(payload.page_url || '').slice(0, 500),
+
     submitted_at: new Date().toISOString(),
   };
 
@@ -109,7 +133,9 @@ export async function onRequestPost(context) {
     return json({ ok: true });
   } catch (error) {
     console.error('Lead forwarding failed', {
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: error instanceof Error
+        ? error.message
+        : 'Unknown error',
     });
 
     return json({
