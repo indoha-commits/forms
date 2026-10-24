@@ -1,5 +1,6 @@
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const LEAD_WEBHOOK_URL = 'https://sales.indataflow.com/integrations/leads/form';
+const LEAD_WEBHOOK_URL =
+  'https://sales.indataflow.com/integrations/leads/website';
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -21,32 +22,55 @@ async function readUpstreamBody(response) {
 
 export async function onRequestPost(context) {
   let payload;
+
   try {
     payload = await context.request.json();
   } catch {
     return json({ error: 'Invalid request' }, 400);
   }
 
-  const required = ['full_name', 'email', 'company', 'role', 'country'];
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return json({ error: 'Invalid request' }, 400);
+  }
+
+  const required = [
+    'full_name',
+    'work_email',
+    'company',
+    'role',
+    'country',
+  ];
+
   if (required.some((key) => !String(payload[key] || '').trim())) {
     return json({ error: 'Required details are missing' }, 400);
   }
-  if (!EMAIL_PATTERN.test(String(payload.email))) {
+
+  if (!EMAIL_PATTERN.test(String(payload.work_email).trim())) {
     return json({ error: 'A valid work email is required' }, 400);
   }
+
   if (payload.consent !== true) {
     return json({ error: 'Consent is required' }, 400);
+  }
+
+  const secret = context.env.SALES_INTAKE_SECRET;
+
+  if (!secret) {
+    console.error('Lead forwarding secret is not configured');
+    return json({ error: 'Lead submission is temporarily unavailable' }, 500);
   }
 
   const companyDomain = String(payload.company_website || '').trim();
 
   const lead = {
-    full_name: String(payload.full_name).slice(0, 120),
-    email: String(payload.email).slice(0, 180),
-    company: String(payload.company).slice(0, 180),
-    company_domain: companyDomain ? companyDomain.slice(0, 300) : undefined,
-    job_title: String(payload.role).slice(0, 120),
-    country: String(payload.country).slice(0, 100),
+    full_name: String(payload.full_name).trim().slice(0, 120),
+    email: String(payload.work_email).trim().slice(0, 180),
+    company: String(payload.company).trim().slice(0, 180),
+    company_domain: companyDomain
+      ? companyDomain.slice(0, 300)
+      : undefined,
+    job_title: String(payload.role).trim().slice(0, 120),
+    country: String(payload.country).trim().slice(0, 100),
     message: String(payload.improvement_goal || '').slice(0, 400),
     consent: true,
     source: String(payload.source || 'website').slice(0, 100),
@@ -60,38 +84,38 @@ export async function onRequestPost(context) {
     submitted_at: new Date().toISOString(),
   };
 
-  const leadWebhookUrl = LEAD_WEBHOOK_URL;
-
-  let forwarded;
   try {
-    forwarded = await fetch(leadWebhookUrl, {
+    const forwarded = await fetch(LEAD_WEBHOOK_URL, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        ...(context.env.SALES_INTAKE_SECRET
-          ? { 'X-Company-Lead-Secret': context.env.SALES_INTAKE_SECRET }
-          : {}),
+        'X-Company-Lead-Secret': secret,
       },
       body: JSON.stringify(lead),
     });
-  } catch {
-    return json({
-      error: 'Lead destination is unavailable',
-      destination: leadWebhookUrl,
-    }, 502);
-  }
 
-  if (!forwarded.ok) {
-    const upstreamBody = await readUpstreamBody(forwarded);
+    if (!forwarded.ok) {
+      console.error('Lead destination rejected request', {
+        status: forwarded.status,
+        statusText: forwarded.statusText,
+        body: await readUpstreamBody(forwarded),
+      });
+
+      return json({
+        error: 'Unable to submit your request. Please try again later.',
+      }, 502);
+    }
+
+    return json({ ok: true });
+  } catch (error) {
+    console.error('Lead forwarding failed', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+
     return json({
-      error: 'Lead destination rejected the request',
-      destination: leadWebhookUrl,
-      upstream_status: forwarded.status,
-      upstream_status_text: forwarded.statusText,
-      upstream_body: upstreamBody,
+      error: 'Unable to submit your request. Please try again later.',
     }, 502);
   }
-  return json({ ok: true });
 }
 
 export function onRequest() {
