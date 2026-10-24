@@ -42,7 +42,7 @@ export async function onRequestPost(context) {
 
   const lead = {
     full_name: String(payload.full_name).slice(0, 120),
-    email: String(payload.work_email).slice(0, 180),
+    email: String(payload.email).slice(0, 180),
     company: String(payload.company).slice(0, 180),
     company_domain: companyDomain ? companyDomain.slice(0, 300) : undefined,
     job_title: String(payload.role).slice(0, 120),
@@ -69,7 +69,7 @@ export async function onRequestPost(context) {
       headers: {
         'content-type': 'application/json',
         ...(context.env.SALES_INTAKE_SECRET
-          ? { 'X-InDataflow-Lead-Secret': context.env.SALES_INTAKE_SECRET }
+          ? { 'X-Company-Lead-Secret': context.env.SALES_INTAKE_SECRET }
           : {}),
       },
       body: JSON.stringify(lead),
